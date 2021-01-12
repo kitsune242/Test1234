@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argos
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitlab-sa
+  namespace: argos 
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: gitlab-role
+  namespace: argos
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: gitlab-rb
+  namespace: argos
+subjects:
+  - kind: ServiceAccount
+    name: gitlab-sa
+    namespace: argos
+roleRef:
+  kind: Role
+  name: gitlab-role
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: gitlab-cluster
+  namespace: argos
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: argos
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-secret
+  namespace: argos
+  annotations: 
+    kubernetes.io/service-account.name: gitlab-sa
+type: kubernetes.io/service-account-token
